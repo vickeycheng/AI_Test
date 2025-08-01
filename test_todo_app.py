@@ -45,24 +45,52 @@ def complete_task(index):
     else:
         print("無效的任務編號。")
 
-def delete_task(index):
+def delete_task(indices=None):
     tasks = load_tasks()
-    if 0 <= index < len(tasks):
-        tasks.pop(index)
+    if not tasks:
+        print("目前沒有任務。")
+        return
+        
+    if indices == 'all':
+        tasks.clear()
         save_tasks(tasks)
-        print("任務已刪除。")
-    else:
+        print("已刪除所有任務。")
+        return
+        
+    if isinstance(indices, str):
+        # Handle multiple indices like "1,2,3"
+        try:
+            indices = [int(i.strip()) - 1 for i in indices.split(',')]
+            indices.sort(reverse=True)  # Sort in reverse to delete from end first
+        except ValueError:
+            print("無效的任務編號格式。請使用逗號分隔的數字，例如：1,2,3")
+            return
+            
+    if isinstance(indices, int):
+        indices = [indices]
+        
+    valid_indices = [i for i in indices if 0 <= i < len(tasks)]
+    if not valid_indices:
         print("無效的任務編號。")
+        return
+        
+    for index in valid_indices:
+        tasks.pop(index)
+    save_tasks(tasks)
+    print(f"已刪除 {len(valid_indices)} 個任務。")
+
 
 def main():
-    while True:
+     while True:
         print("\n待辦事項應用")
         print("1. 添加新任務")
         print("2. 查看所有任務")
         print("3. 標記任務為完成")
         print("4. 刪除任務")
         print("5. 退出")
+        
         choice = input("請選擇功能 (1-5): ")
+        
         if choice == "1":
             desc = input("請輸入任務描述: ")
             add_task(desc)
@@ -76,17 +104,36 @@ def main():
             else:
                 print("請輸入有效的數字。")
         elif choice == "4":
-            view_tasks()
-            idx = input("請輸入要刪除的任務編號: ")
-            if idx.isdigit():
-                delete_task(int(idx) - 1)
+            print("\n刪除任務選項：")
+            print("1. 刪除單個任務")
+            print("2. 刪除多個任務")
+            print("3. 刪除所有任務")
+            print("4. 返回主選單")
+            delete_choice = input("請選擇刪除方式 (1-4): ")
+            
+            if delete_choice == "1":
+                view_tasks()
+                idx = input("請輸入要刪除的任務編號: ")
+                if idx.isdigit():
+                    delete_task(int(idx) - 1)
+                else:
+                    print("請輸入有效的數字。")
+            elif delete_choice == "2":
+                view_tasks()
+                indices = input("請輸入要刪除的任務編號（用逗號分隔，例如：1,2,3）: ")
+                delete_task(indices)
+            elif delete_choice == "3":
+                confirm = input("確定要刪除所有任務嗎？(y/n): ")
+                if confirm.lower() == 'y':
+                    delete_task('all')
+            elif delete_choice == "4":
+                continue
             else:
-                print("請輸入有效的數字。")
+                print("請輸入有效選項。")
         elif choice == "5":
             print("再見！")
             break
         else:
             print("請輸入有效選項。")
-            
 if __name__ == "__main__":
     main()
