@@ -17,9 +17,14 @@ def save_tasks(tasks):
 def add_task(description):
     tasks = load_tasks()
     now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    tasks.append({"description": description, "completed": False})
+    tasks.append({
+        "description": description,
+        "completed": False,
+        "created_at": now,
+        "added_at": now
+    })
     save_tasks(tasks)
-    print("已添加新任務。")
+    print(f"已添加新任務（建立時間：{now}）。")
 
 def view_tasks():
     tasks = load_tasks()
@@ -29,7 +34,7 @@ def view_tasks():
     for idx, task in enumerate(tasks, 1):
         status = "✔" if task["completed"] else "✗"
         created = task.get("created_at", "未知時間")
-        print(f"{idx}. [{status}] {task['description']}")
+        print(f"{idx}. [{status}] {task['description']}（建立時間：{created}）")
 
 def complete_task(index):
     tasks = load_tasks()
