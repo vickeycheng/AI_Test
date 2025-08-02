@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📝 Vickey's Fancy TODO App</title>
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    
+    <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+            --success-gradient: linear-gradient(135deg, #198754 0%, #20c997 100%);
+            --danger-gradient: linear-gradient(135deg, #dc3545 0%, #fd7e14 100%);
+            --light-bg: #f8f9fa;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-size: 14px;
+        }
+        
+        .glass-card {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 16px 0 rgba(0, 0, 0, 0.1);
+        }
+        
+        .task-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 10px;
+            border: none;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px 0 rgba(0, 0, 0, 0.1);
+        }
+        
+        .task-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px 0 rgba(0, 0, 0, 0.15);
+        }
+        
+        .task-completed {
+            opacity: 0.7;
+            text-decoration: line-through;
+        }
+        
+        .btn-gradient-primary {
+            background: var(--primary-gradient);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-weight: 500;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-gradient-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 3px 8px rgba(108, 117, 125, 0.3);
+            color: white;
+        }
+        
+        .btn-gradient-success {
+            background: var(--success-gradient);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-size: 13px;
+        }
+        
+        .btn-gradient-danger {
+            background: var(--danger-gradient);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-size: 13px;
+        }
+        
+        .stats-card {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            border-radius: 10px;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            color: #495057;
+            box-shadow: 0 2px 8px 0 rgba(0, 0, 0, 0.1);
+        }
+        
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container py-5">
+        <!-- Header -->
+        <div class="row justify-content-center mb-5">
+            <div class="col-md-10">
+                <div class="glass-card p-4 text-center">
+                    <h1 class="h2 fw-bold text-dark mb-3">
+                        <i class="bi bi-list-check"></i> 
+                        Vickey's TODO App
+                    </h1>
+                    <p class="text-muted">Manage your tasks efficiently! ✨</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Statistics Cards -->
+        <div class="row justify-content-center mb-4">
+            <div class="col-md-10">
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <div class="stats-card p-3 text-center pulse">
+                            <i class="bi bi-list-ul fs-1 mb-2"></i>
+                            <h3 class="fw-bold" id="totalTasks">{{ total_tasks }}</h3>
+                            <p class="mb-0">Total Tasks</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="stats-card p-3 text-center">
+                            <i class="bi bi-check-circle fs-1 mb-2 text-success"></i>
+                            <h3 class="fw-bold" id="completedTasks">{{ completed_tasks }}</h3>
+                            <p class="mb-0">Completed</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="stats-card p-3 text-center">
+                            <i class="bi bi-clock fs-1 mb-2 text-warning"></i>
+                            <h3 class="fw-bold" id="pendingTasks">{{ pending_tasks }}</h3>
+                            <p class="mb-0">Pending</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add Task Form -->
+        <div class="row justify-content-center mb-4">
+            <div class="col-md-10">
+                <div class="glass-card p-4">
+                    <h5 class="text-dark mb-3">
+                        <i class="bi bi-plus-circle"></i> Add New Task
+                    </h5>
+                    <form id="addTaskForm" class="row g-3">
+                        <div class="col-md-9">
+                            <input type="text" 
+                                   class="form-control" 
+                                   id="taskDescription" 
+                                   placeholder="Enter your task description..."
+                                   required>
+                        </div>
+                        <div class="col-md-3">
+                            <button type="submit" class="btn btn-gradient-primary w-100">
+                                <i class="bi bi-plus-lg"></i> Add Task
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="row justify-content-center mb-4">
+            <div class="col-md-10">
+                <div class="glass-card p-3">
+                    <div class="d-flex flex-wrap gap-2 justify-content-center">
+                        <button class="btn btn-gradient-success" onclick="deleteCompleted()">
+                            <i class="bi bi-check2-all"></i> Clear Completed
+                        </button>
+                        <button class="btn btn-gradient-danger" onclick="deleteAll()">
+                            <i class="bi bi-trash"></i> Clear All Tasks
+                        </button>
+                        <button class="btn btn-outline-light" onclick="refreshTasks()">
+                            <i class="bi bi-arrow-clockwise"></i> Refresh
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tasks List -->
+        <div class="row justify-content-center">
+            <div class="col-md-10">
+                <div class="glass-card p-4">
+                    <h5 class="text-dark mb-4">
+                        <i class="bi bi-list-task"></i> Your Tasks
+                    </h5>
+                    <div id="tasksList">
+                        {% if tasks %}
+                            {% for task in tasks %}
+                            <div class="task-card p-3 mb-3 fade-in" data-task-id="{{ task.get('id', loop.index) }}">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div class="flex-grow-1">
+                                        <div class="d-flex align-items-center">
+                                            <div class="form-check me-3">
+                                                <input class="form-check-input" 
+                                                       type="checkbox" 
+                                                       id="task{{ task.get('id', loop.index) }}"
+                                                       {% if task.completed %}checked{% endif %}
+                                                       onchange="toggleTask({{ task.get('id', loop.index) }})">
+                                            </div>
+                                            <div>
+                                                <h6 class="mb-1 {% if task.completed %}task-completed{% endif %}">
+                                                    {{ task.description }}
+                                                </h6>
+                                                <small class="text-muted">
+                                                    <i class="bi bi-calendar"></i> 
+                                                    Created: {{ task.get('created_at', 'Unknown') }}
+                                                </small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="ms-3">
+                                        <button class="btn btn-outline-danger btn-sm" 
+                                                onclick="deleteTask({{ task.get('id', loop.index) }})">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="text-center py-5">
+                                <i class="bi bi-inbox display-4 text-muted"></i>
+                                <h6 class="text-muted mt-3">No tasks yet!</h6>
+                                <p class="text-muted">Add your first task above to get started.</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notifications -->
+    <div class="toast-container position-fixed bottom-0 end-0 p-3">
+        <div id="toast" class="toast" role="alert">
+            <div class="toast-header">
+                <i class="bi bi-check-circle-fill text-success me-2"></i>
+                <strong class="me-auto">TODO App</strong>
+                <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
+            </div>
+            <div class="toast-body" id="toastMessage">
+                Action completed successfully!
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap 5 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Custom JavaScript -->
+    <script>
+        // Add Task
+        document.getElementById('addTaskForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const description = document.getElementById('taskDescription').value.trim();
+            if (!description) return;
+            
+            try {
+                const response = await fetch('/api/tasks', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ description: description })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    document.getElementById('taskDescription').value = '';
+                    showToast('Task added successfully! 🎉');
+                    refreshTasks();
+                } else {
+                    showToast('Error: ' + result.error, 'error');
+                }
+            } catch (error) {
+                showToast('Error adding task: ' + error.message, 'error');
+            }
+        });
+        
+        // Toggle Task Completion
+        async function toggleTask(taskId) {
+            try {
+                const response = await fetch(`/api/tasks/${taskId}/complete`, {
+                    method: 'PUT'
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showToast('Task updated! ✅');
+                    refreshTasks();
+                } else {
+                    showToast('Error: ' + result.error, 'error');
+                }
+            } catch (error) {
+                showToast('Error updating task: ' + error.message, 'error');
+            }
+        }
+        
+        // Delete Task
+        async function deleteTask(taskId) {
+            if (!confirm('Are you sure you want to delete this task?')) return;
+            
+            try {
+                const response = await fetch(`/api/tasks/${taskId}`, {
+                    method: 'DELETE'
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showToast('Task deleted! 🗑️');
+                    refreshTasks();
+                } else {
+                    showToast('Error: ' + result.error, 'error');
+                }
+            } catch (error) {
+                showToast('Error deleting task: ' + error.message, 'error');
+            }
+        }
+        
+        // Delete Completed Tasks
+        async function deleteCompleted() {
+            if (!confirm('Delete all completed tasks?')) return;
+            
+            try {
+                const response = await fetch('/api/tasks/delete-completed', {
+                    method: 'DELETE'
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showToast(result.message + ' 🧹');
+                    refreshTasks();
+                } else {
+                    showToast('Error: ' + result.error, 'error');
+                }
+            } catch (error) {
+                showToast('Error: ' + error.message, 'error');
+            }
+        }
+        
+        // Delete All Tasks
+        async function deleteAll() {
+            if (!confirm('⚠️ Delete ALL tasks? This cannot be undone!')) return;
+            
+            try {
+                const response = await fetch('/api/tasks/delete-all', {
+                    method: 'DELETE'
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showToast('All tasks deleted! 💥');
+                    refreshTasks();
+                } else {
+                    showToast('Error: ' + result.error, 'error');
+                }
+            } catch (error) {
+                showToast('Error: ' + error.message, 'error');
+            }
+        }
+        
+        // Refresh Tasks
+        function refreshTasks() {
+            window.location.reload();
+        }
+        
+        // Show Toast Notification
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            const toastMessage = document.getElementById('toastMessage');
+            const toastHeader = toast.querySelector('.toast-header');
+            
+            toastMessage.textContent = message;
+            
+            // Update toast style based on type
+            if (type === 'error') {
+                toastHeader.innerHTML = '<i class="bi bi-exclamation-triangle-fill text-danger me-2"></i><strong class="me-auto">Error</strong><button type="button" class="btn-close" data-bs-dismiss="toast"></button>';
+            } else {
+                toastHeader.innerHTML = '<i class="bi bi-check-circle-fill text-success me-2"></i><strong class="me-auto">TODO App</strong><button type="button" class="btn-close" data-bs-dismiss="toast"></button>';
+            }
+            
+            const bsToast = new bootstrap.Toast(toast);
+            bsToast.show();
+        }
+        
+        // Auto-focus on task input
+        document.getElementById('taskDescription').focus();
+    </script>
+</body>
+</html>

@@ -1,0 +1,43 @@
+test_add_task (__main__.TestTodoApp)
+Test adding a new task ... ok
+test_complete_task_invalid_index (__main__.TestTodoApp)
+Test completing a task with invalid index ... ok
+test_complete_task_valid_index (__main__.TestTodoApp)
+Test completing a task with valid index ... ok
+test_delete_task_all (__main__.TestTodoApp)
+Test deleting all tasks ... ok
+test_delete_task_empty_list (__main__.TestTodoApp)
+Test deleting task when no tasks exist ... ok
+test_delete_task_invalid_format (__main__.TestTodoApp)
+Test deleting tasks with invalid format ... ok
+test_delete_task_invalid_index (__main__.TestTodoApp)
+Test deleting task with invalid index ... ok
+test_delete_task_multiple_valid (__main__.TestTodoApp)
+Test deleting multiple tasks with valid indices ... ok
+test_delete_task_single_valid (__main__.TestTodoApp)
+Test deleting a single task with valid index ... ok
+test_edge_case_empty_description (__main__.TestTodoApp)
+Test adding task with empty description ... ok
+test_edge_case_long_description (__main__.TestTodoApp)
+Test adding task with very long description ... ok
+test_file_persistence (__main__.TestTodoApp)
+Test that tasks persist across save/load cycles ... ok
+test_json_encoding_utf8 (__main__.TestTodoApp)
+Test that Chinese characters are properly handled in JSON ... ok
+test_load_tasks_no_file (__main__.TestTodoApp)
+Test loading tasks when file doesn't exist ... ok
+test_load_tasks_with_file (__main__.TestTodoApp)
+Test loading tasks from existing file ... ok
+test_save_tasks (__main__.TestTodoApp)
+Test saving tasks to file ... ok
+test_view_tasks_empty (__main__.TestTodoApp)
+Test viewing tasks when no tasks exist ... ok
+test_view_tasks_with_data (__main__.TestTodoApp)
+Test viewing tasks with existing data ... ok
+
+----------------------------------------------------------------------
+Ran 18 tests in 0.075s
+
+OK
+已添加新任務（建立時間：2025-08-02 13:32:03）。
+已添加新任務（建立時間：2025-08-02 13:32:03）。
